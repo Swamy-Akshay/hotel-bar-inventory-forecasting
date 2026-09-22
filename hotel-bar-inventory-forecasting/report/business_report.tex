@@ -1,0 +1,163 @@
+\documentclass[11pt,a4paper]{article}
+
+% ---------- Packages ----------
+\usepackage[a4paper,margin=1.75cm,top=1.6cm,bottom=1.55cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage{microtype}
+\usepackage{titlesec}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{ragged2e}
+\usepackage{hyperref}
+\usepackage{parskip}
+\usepackage{needspace}
+
+% ---------- Colors ----------
+\definecolor{navy}{HTML}{18324A}
+\definecolor{teal}{HTML}{2D6A73}
+\definecolor{lightgray}{HTML}{F3F5F7}
+\definecolor{midgray}{HTML}{66737F}
+\definecolor{rulegray}{HTML}{D9DEE3}
+
+% ---------- Global typography ----------
+\setlength{\parindent}{1.15em}
+\setlength{\parskip}{3.5pt plus 0.5pt minus 0.3pt}
+\setlength{\emergencystretch}{2.2em}
+\linespread{1.02}
+\setlist[itemize]{leftmargin=1.6em,itemsep=1.5pt,topsep=2pt,parsep=0pt}
+
+% ---------- Section styling ----------
+\titleformat{\section}
+  {\needspace{3\baselineskip}\large\bfseries\color{navy}}
+  {\thesection}{0.55em}{}
+\titlespacing*{\section}{0pt}{7pt plus 2pt minus 1pt}{3pt}
+
+% ---------- Header/footer ----------
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[L]{\small\color{midgray}Hotel Bar Inventory Forecasting}
+\fancyhead[R]{\small\color{midgray}Business Report}
+\fancyfoot[C]{\small\color{midgray}\thepage\ / \pageref{LastPage}}
+
+\hypersetup{colorlinks=true,linkcolor=navy,urlcolor=teal}
+\urlstyle{same}
+
+% ---------- Table helpers ----------
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+\begin{document}
+
+% ---------- Title block ----------
+\begin{flushleft}
+{\color{navy}\fontsize{21}{24}\selectfont\bfseries Hotel Bar Inventory Forecasting\\[2pt]
+\color{teal}\fontsize{13}{16}\selectfont Demand Forecasting, Par Levels \& Inventory Simulation}
+\end{flushleft}
+
+\vspace{3pt}
+\noindent{\color{rulegray}\rule{\textwidth}{0.8pt}}
+\vspace{5pt}
+
+\noindent
+\begin{tabularx}{\textwidth}{@{}Y r@{}}
+\textbf{Prepared by} & \textbf{Project scope}\\
+Swamy Keerthi Naga Akshay & 96 Bar $\times$ Brand series\\
+\end{tabularx}
+
+\vspace{6pt}
+
+\noindent\colorbox{lightgray}{%
+\begin{minipage}{0.965\textwidth}
+\small\textbf{Executive takeaway.}\quad The project turns transaction-level bar inventory records into daily demand series, evaluates forecasting approaches with time-aware validation, and converts the selected forecast into dynamic replenishment levels. The final forecasting method is the \textbf{Same Weekday Mean over the previous 8 weeks}. On the locked final test period, it achieved an MAE of \textbf{59.14 ml} and WAPE of \textbf{106.16\%}. The inventory simulation then measured the operational consequences of the resulting policy.
+\end{minipage}}
+
+\section{Core Business Problem and Operational Impact}
+
+Hotel bar inventory has to balance two practical risks. A popular brand running out at the wrong time can mean an order cannot be served, while carrying too much of a slow-moving product ties up working capital and consumes limited storage space. The objective of this project was therefore not simply to predict consumption, but to connect demand forecasting with a replenishment policy that managers can actually use.
+
+The raw records were transformed into a regular daily time series covering \textbf{96 Bar $\times$ Brand combinations}. Explicit zero-consumption days were retained so that the forecasting process could distinguish between genuine demand and days on which a brand was not consumed.
+
+\section{Assumptions and Inventory Policy}
+
+The analysis uses a fixed supplier lead time of \textbf{2 days} and a target service level of \textbf{95\%}, represented by $Z=1.645$. Unmet demand is treated as lost demand rather than backordered demand. Consumption is measured in millilitres and aggregated to daily Bar $\times$ Brand observations.
+
+For each series, the replenishment target follows the standard structure:
+\[
+\text{Par Level}=\text{Lead-Time Demand}+\text{Safety Stock}
+\]
+with safety stock based on historical demand variability:
+\[
+\text{Safety Stock}=1.645\,\sigma_{daily}\sqrt{2}.
+\]
+
+Using the final forecast, the policy produced an average par level of \textbf{340.29 ml} per Bar $\times$ Brand observation, with a maximum of \textbf{949.70 ml}.
+
+\section{Forecasting Approach and Model Selection}
+
+Because demand is intermittent and contains many zero observations, the model comparison was carried out using chronological, expanding walk-forward validation rather than randomized cross-validation. Performance was assessed primarily with MAE and WAPE, which are more informative here than MAPE when many observations are zero.
+
+The development experiments compared moving-average, weekday-based, and intermittent-demand methods. The selected approach uses the mean consumption for the same weekday across the previous eight weeks. It is intentionally simple and transparent, while still reflecting the strong weekly rhythm visible in bar demand.
+
+\begin{center}
+\small
+\begin{tabularx}{0.92\textwidth}{@{}Yrrr@{}}
+\toprule
+\textbf{Final-test model} & \textbf{MAE (ml)} & \textbf{WAPE (\%)} & \textbf{Positive forecast (\%)}\\
+\midrule
+Same Weekday Mean 8W & 59.14 & 106.16 & 6.83\\
+Rolling Mean 14 baseline & 94.16 & 169.01 & 86.46\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The selected method therefore reduced the final-test MAE and WAPE relative to the 14-day rolling baseline. At the same time, its lower forecast activity indicates a remaining limitation: it still tends to under-predict the frequency of positive-demand days. This is important context when interpreting the inventory results.
+
+\section{Performance and Inventory Simulation}
+
+The final test period ran from \textbf{20 October 2023 to 1 January 2024}, covering 7,104 observations across the 96 Bar $\times$ Brand series. The forecasting model was selected without using this final holdout period, and the final test was then used once for the reported performance measurement.
+
+The resulting daily inventory simulation uses an order-up-to policy with the calculated par levels and a two-day delivery delay. When available inventory cannot cover actual demand, the shortfall is recorded as lost volume. The simulation produced the following business-level KPIs:
+
+\vspace{2pt}
+\begin{center}
+\small
+\begin{tabularx}{0.90\textwidth}{@{}Y r@{}}
+\toprule
+\textbf{KPI} & \textbf{Result}\\
+\midrule
+Total demand & 395,762.81 ml\\
+Fulfilled demand & 287,291.29 ml\\
+Lost volume & 108,471.52 ml\\
+Service level & 72.59\%\\
+Stockout series-days & 586\\
+Stockout calendar days & 72\\
+Average total inventory & 27,965.57 ml\\
+Order events & 1,163\\
+Total ordered volume & 276,885.94 ml\\
+Inventory turnover & 14.15\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+These results show a clear operational trade-off. The policy maintains a defined inventory buffer, but the simulated service level is still only \textbf{72.59\%}, with \textbf{108,471.52 ml} of demand recorded as lost. In other words, the current forecast-and-policy combination is internally consistent, but it is not yet sufficient to eliminate stockout exposure.
+
+\section{Future Improvements and Production Considerations}
+
+The largest opportunity is to improve the forecast of \emph{whether} consumption will occur as well as \emph{how much} will be consumed. Future versions could use separate occurrence and volume models, together with holiday calendars, promotions, local events, recent POS activity, and longer-term seasonal signals.
+
+The replenishment policy should also be extended to handle supplier lead-time variability rather than assuming that every delivery arrives after exactly two days. Other practical sources of error include substitutions, pouring waste, breakage, and differences between recorded consumption and physical stock movement.
+
+For deployment, the workflow could run automatically each day and present each bar manager with the expected demand, current par level, safety stock, and recommended order quantity. Production monitoring should track forecast error, positive-demand detection, stockouts, lost volume, inventory levels, and demand drift so that the policy can be recalibrated as operating conditions change.
+
+\vfill
+\noindent{\color{rulegray}\rule{\textwidth}{0.6pt}}
+\vspace{3pt}
+\noindent\small\color{midgray}\textit{Project note: Metrics reported above are taken from the final notebook run. The final holdout period remains separate from the development-stage model-selection process.}
+
+\end{document}
