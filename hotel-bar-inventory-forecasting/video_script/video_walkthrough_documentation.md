@@ -127,3 +127,6 @@ The main challenge is intermittent demand. Some Bar × Brand combinations have m
 The current solution provides a practical baseline and a complete decision flow. Future versions could use additional information such as promotions, holidays, events, real-time POS data, and supplier lead-time changes to improve the results.
 
 This version is much better suited for a **GitHub project explanation**: you can glance at each section while recording without having to read it word-for-word.
+
+
+Video url : https://drive.google.com/drive/folders/1bDi3I97ZUxvlhYsgbzSNY8rld4NSOW_u?usp=sharing
